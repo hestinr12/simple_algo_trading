@@ -33,7 +33,7 @@ def main():
 	config = json.load(open('./data_config.json', 'r'))
 	
 	tws = Connection.create(port=tws_port, clientId=tws_client_id)
-	tws_manager = (tws, config, 1) 
+	tws_manager = (tws, config, default_order_id) 
 	#demo_strat = DemoStrategy() # Soon...
 
 
