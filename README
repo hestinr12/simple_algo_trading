@@ -1,5 +1,8 @@
 Welcome to a simple trading set up built using IbPy
 
+Obvious Disclaimer: Work in progress...
+
+
 
 IbPy is a dependency of this project, and is NOT available on pip. To install, please for the repo and run setup.py to make this usable.
 
