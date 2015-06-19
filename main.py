@@ -21,7 +21,7 @@ end_of_day = 18 * 60 *60
 # TWS default settings
 tws_port = 7496
 tws_client_id = 1234
-default_order_id = 1  # not entirely safe...
+default_order_id = 1  #not entirely safe...
 
 
 
