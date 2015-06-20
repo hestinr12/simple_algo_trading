@@ -3,7 +3,6 @@ import sched
 import time
 import datetime
 from ib.opt import ibConnection, Connection, message
-from modules.router import TwsManager
 try:
 	from modules.live import DemoStrategy
 except:
@@ -32,8 +31,7 @@ def main():
 	# See examples/data_config.json for some example formats 
 	config = json.load(open('./data_config.json', 'r'))
 	
-	tws = Connection.create(port=tws_port, clientId=tws_client_id)
-	tws_manager = (tws, config, default_order_id) 
+	tws_manager = (config, default_order_id) 
 	#demo_strat = DemoStrategy() # Soon...
 
 

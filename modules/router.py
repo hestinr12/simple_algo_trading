@@ -1,4 +1,3 @@
-''' Not a great filename... '''
 
 
 class TwsManager():
@@ -6,15 +5,8 @@ class TwsManager():
 
 	def __init__(self, tws, default_order_id):
 		''' Pass in the TWS connection object and be responsible for it''' 
-		self._tws = tws
+		self._tws = Connection.create(port=tws_port, clientId=tws_client_id)
 		self._order_id = default_order_id
-
-	@staticmethod
-	def craft_contract(data):
-		if isinstance(data, dict):
-			raise NotImplementedError
-		else:
-			raise TypeError
 
 	def register_all(self, handler):
 		''' Wrapper for TWS Connection handler registration '''
