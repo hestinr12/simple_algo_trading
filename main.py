@@ -23,14 +23,22 @@ tws_port = 7496
 tws_client_id = 1234
 default_order_id = 1  # not entirely safe...
 
+#default config
+config_file = './data_config.json'
+
 
 
 def main():
 	''' Entry into basic market functionality '''
 	
 	# See examples/data_config.json for some example formats 
-	config = json.load(open('./data_config.json', 'r'))
-	
+	try:
+		config = json.load(open(config_file, 'r'))
+	except:
+		print('Config file not found')
+		raise ValueError
+
+
 	tws_manager = (config, default_order_id) 
 	#demo_strat = DemoStrategy() # Soon...
 

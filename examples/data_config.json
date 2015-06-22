@@ -1,1 +1,28 @@
-{"TODO":"Referenced from TwsManager.request_market_data"}
+{
+	"live":{
+		"goog":{
+			"source":"IB",
+			"auto_init":true,
+			"info":{
+				"symbol":"GOOG",
+				"security_type":"STK",
+				"exchange":"SMART",
+				"primary_exchange":"SMART",
+				"currency":"USD"
+			}
+		},
+		"aapl_option":{
+			"source":"IB",
+			"auto_init":false,
+			"info":{
+				"symbol":"AAPL",
+				"security_type":"OPT",
+				"exchange":"SMART",
+				"primary_exchange":"SMART",
+				"currency":"USD",
+				"right":"C",
+				"multiplier":100
+			}
+		}
+	}
+}
