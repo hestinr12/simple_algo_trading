@@ -2,7 +2,6 @@ import json
 import sched
 import time
 import datetime
-from ib.opt import ibConnection, Connection, message
 try:
 	from modules.live import DemoStrategy
 except:
@@ -39,7 +38,7 @@ def main():
 		raise ValueError
 
 
-	tws_manager = (config, default_order_id) 
+	tws_manager = (tws_port, tws_client_id, default_order_id) 
 	#demo_strat = DemoStrategy() # Soon...
 
 
