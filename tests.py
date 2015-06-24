@@ -75,8 +75,9 @@ class TwsManagerTests(unittest.TestCase):
 	def test_connection(self):
 		raise NotImplementedError
 
-	def test_stock_data_req(self):		
-		self.basic_data_pull(self.basicHandler, 'TickPrice')
+	def test_stock_data_req(self):
+		test_events = ['TickPrice']		
+		self.basic_data_pull(self.basicHandler, test_events)
 		assert len(self.msgs) > 0
 
 
