@@ -1,8 +1,7 @@
 {
-	"live":{
+	"positions":{
 		"goog":{
 			"source":"IB",
-			"auto_init":true,
 			"info":{
 				"symbol":"GOOG",
 				"security_type":"STK",
@@ -13,7 +12,6 @@
 		},
 		"aapl_option":{
 			"source":"IB",
-			"auto_init":false,
 			"info":{
 				"symbol":"AAPL",
 				"security_type":"OPT",

@@ -8,8 +8,11 @@ class TradingStrategy():
 	...isn't this why they made ABCs? Or, you know...
 	'''
 
-	def on_premarket(self, data):
+	def fetch(self):
 		raise NotImplementedError
 
-	def on_live_tick(self, msg):
+	def live(self):
+		raise NotImplementedError
+
+	def end(self):
 		raise NotImplementedError
