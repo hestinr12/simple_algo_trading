@@ -107,3 +107,33 @@ class TwsManager():
 
 		return order_id
 
+	def request_market_data_option_snapshot(self, position, callback):
+		''' Open data spouts for each index past, fitted with appropriate
+		data to craft TWS Contract objects (for example, see examples/contract.py)
+
+		Returns: order id of the data stream
+
+		WARNING - Should be called for all positions before 'connect()'
+		'''
+
+		if not self.connected:
+			raise RuntimeError
+
+		if not isinstance(position, Position):
+			raise ValueError
+			
+		new_contract = None
+		sec_type = position.get_security_type()
+		index = position.get_index_descrption()
+
+		if sec_type == 'OPT':
+			new_contract = craft_contract_option(index, strike, expiry)
+		else:
+			raise ValueError
+
+		order_id = self.get_order_id()
+		self._tws.reqMktData(order_id, new_contract, '', True)
+		self._data_contracts[order_id] = position.data_handler
+
+		return order_id
+

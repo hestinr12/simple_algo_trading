@@ -23,47 +23,29 @@ class Position():
 	measured in "differential from 0"
 	'''
 
-	def __init__(self):
+	def __init__(self, index):
 		pass
 		'''
-		self.__position = None
-		self.__threshold = None
-		self.__should_open = None
-		self.__close_handler = None
-		self.__index = None
+		self.__premarket_decision = False
+		self.__initialized = False
+		self.__threshold_set = False
+		self.__opened = False
+		self.__live = False
+		self.__closed = False
 		'''
 
-	def __eq__(self, other):
-		if type(other) is type(self):
-			return self.__dict__ == other.__dict__
-		return False
-	
-	def get_security_type(self):
+	def premarket_check(self):
 		raise NotImplementedError
 
-	def get_index_description(self):
-		'''returns the dict from data_config.json'''
+	def initialize_order(self):
 		raise NotImplementedError
 
-	def open_check(self):
-		''' returns True is the position is now open
-			else False (reasons plenty)
+	def live(self):
+		raise NotImplementedError
 
-			Determines if this position should open
-		'''
+	def close(self):
 		raise NotImplementedError
 
 	def data_handler(self, msg):
-		raise NotImplementedError
-
-	def triggered(self):
-		''' returns True if threshold is met
-			false otherwise
-
-			Mostly just a wrapper for __threshold
-		'''
-		raise NotImplementedError
-
-	def set_close_handler(self, handler):
 		raise NotImplementedError
 

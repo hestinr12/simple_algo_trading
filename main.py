@@ -1,11 +1,8 @@
-import json
+import yaml
 import sched
 import time
 import datetime
-try:
-	from modules.live import DemoStrategy
-except:
-	from modules.dummy_live import DemoStrategy
+from lib.demo_position import SvxyCallPosition
 
 
 
@@ -23,7 +20,7 @@ tws_client_id = 1234
 default_order_id = 1  # not entirely safe...
 
 #default config
-config_file = './data_config.json'
+config_file = './data_config.yaml'
 
 
 
@@ -32,14 +29,28 @@ def main():
 	
 	# See examples/data_config.json for some example formats 
 	try:
-		config = json.load(open(config_file, 'r'))
+		config = yaml.load(open(config_file, 'r'))
 	except:
 		print('Config file not found')
 		raise ValueError
 
-
 	tws_manager = (tws_port, tws_client_id, default_order_id) 
-	#demo_strat = DemoStrategy() # Soon...
+	
+	demo_pos = SvxyCallPosition(config[0])
+
+	'''
+	Position Lifecycle:
+	- decision to create
+	- Created
+	- initialized 
+	- fed data
+	- closed
+
+	*Instructions derived from data in future...
+
+	'''
+
+
 
 
 	# This will be for the actual processes during active hours
