@@ -43,6 +43,9 @@ class Position():
 	def live(self):
 		raise NotImplementedError
 
+	def acquire_target(self):
+		raise NotImplementedError
+
 	def close(self):
 		raise NotImplementedError
 

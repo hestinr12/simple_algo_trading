@@ -21,6 +21,7 @@ class SvxyCallPosition(Position): # Scraper, Listener
 		self.__threshold_set = False
 		self.__opened = False
 		self.__live = False
+		self.__executed_open = False
 		self.__closed = False		
 
 	def premarket_check(self):
@@ -85,6 +86,10 @@ class SvxyCallPosition(Position): # Scraper, Listener
 
 
 	def live(self):
+		raise NotImplementedError
+
+	def acquire_target(self):
+		'''blocks live until we have target'''
 		raise NotImplementedError
 
 	def close(self):
