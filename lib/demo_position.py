@@ -15,13 +15,14 @@ class SvxyCallPosition(Position): # Scraper, Listener
 
 		self.__strike = None
 		self.__expiry = None
+		self.__target = None
 
 		self.__premarket_decision = False
 		self.__initialized = False
 		self.__threshold_set = False
 		self.__opened = False
 		self.__live = False
-		self.__executed_open = False
+		self.__target_acquired = False
 		self.__closed = False		
 
 	def premarket_check(self):
@@ -74,29 +75,63 @@ class SvxyCallPosition(Position): # Scraper, Listener
 
 				self.__strike = strike
 
-				### START HERE ###
-				# Needs to calc expiry,
-				# Set expiry
-				# then set flag and return
-				##################
+
+				date = datetime.date.today()
+				today = datetime.date.today().ctime()
+				offset = 4
+				week_days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
+				# expiry date is the nearest friday from now
+
+				for day in week_days:
+					if day in today:
+						self.__expiry = '{}{}{}'.format(today.year, today.month, today.day+offset)
+						break
+					offset -= 1
 
 				self.__initialized = True
 			finally:
 				pass
 
-
 	def live(self):
-		raise NotImplementedError
+		'''if self.__premarket_decision and not self.__initialized:
+			# try again?
+			return None
+		'''
+
+		if self.__premarket_decision and self.__initialized:
+			'''Returns order to craft'''
+			option_info = self.__index['live']['info']
+			order_details = self.__index['live']['order']
+
+			contract = create_contract_option(option_info, self.__strike, self.__expiry)
+			order = create_order(order_details)
+
+			return (contract, order)
+
+		return None
 
 	def acquire_target(self):
 		'''blocks live until we have target'''
 		raise NotImplementedError
 
 	def close(self):
+		'''called from handler as exit'''
 		raise NotImplementedError
 
 	def data_handler(self, msg):
-		raise NotImplementedError
+		'''routes to correct handler'''
+		'''wait is this just like tws_manager?'''
+		if self.__target_acquired:
+			# check if we should close
+			pass
+		else:
+			if msg.typeName is 'updatePortfolio':
+				pass
+				### START HERE ### rhestin
+				# if contract is my contract
+				#   price paid?
+				#   acquire target
+				# *ADD COMPARE CONTRACT FOR OPTION/STOCK TO CONTRACT.PY
 
 
 

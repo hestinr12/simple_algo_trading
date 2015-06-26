@@ -1,5 +1,5 @@
 from ib.ext.Contract import Contract
-
+from ib.ext.Order import Order
 
 
 def craft_contract_stock(data):
@@ -39,3 +39,18 @@ def craft_contract_option(data, strike, expiry):
 			raise TypeError
 	else:
 		raise TypeError
+
+
+def create_order(data):
+	if isinstance(data, dict)
+		try:
+			order = Order()
+			order.m_orderType = data['type']
+			order.m_totalQuantity = data['quantity']
+			order.m_action = data['action']
+			return order
+		except:
+			raise ValueError
+	else:
+		raise TypeError	
+

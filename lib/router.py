@@ -1,6 +1,8 @@
 from lib.contract import *
 from lib.base_class.position_base import Position
 from ib.opt import ibConnection, Connection, message
+from ib.ext.Contract import Contract
+from ib.ext.Order import Order
 
 
 class TwsManager():
@@ -46,6 +48,16 @@ class TwsManager():
 
 	def route_message(self, msg):
 		self._data_router[msg.tickerId](msg)
+
+	def placeOrder(self, contract, order):
+		if not isinstance(contract, Contract):
+			raise ValueError
+		if not isinstance(order, Order):
+			raise ValueError
+
+		order_id = self.get_order_id()
+		self._tws.placeOrder(order_id, contract, order)
+		
 
 	def request_market_data_stock(self, position):
 		''' Open data spouts for each index past, fitted with appropriate
@@ -136,4 +148,5 @@ class TwsManager():
 		self._data_contracts[order_id] = position.data_handler
 
 		return order_id
+
 
