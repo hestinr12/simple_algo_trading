@@ -13,7 +13,9 @@ class TwsManager():
 		self._tws = Connection.create(port=tws_port, clientId=tws_client_id)
 		self.connected = False
 		self._order_id = default_order_id
+		self._account_updates = ['UpdatePortfolio']
 		self._data_router = {} # order_id:position
+		self.__all_positions = list()
 
 	def get_order_id(self):
 		old_id = self._order_id
@@ -48,6 +50,10 @@ class TwsManager():
 
 	def route_message(self, msg):
 		self._data_router[msg.tickerId](msg)
+		#send account updates to all positions
+		if msg.typeName in self._account_updates:
+			for p in self.__all_positions:
+				p.data_handler(msg)
 
 	def placeOrder(self, contract, order):
 		if not isinstance(contract, Contract):
@@ -146,6 +152,7 @@ class TwsManager():
 		order_id = self.get_order_id()
 		self._tws.reqMktData(order_id, new_contract, '', True)
 		self._data_contracts[order_id] = position.data_handler
+		self.__all_positions.append(position)
 
 		return order_id
 

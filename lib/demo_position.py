@@ -13,16 +13,21 @@ class SvxyCallPosition(Position): # Scraper, Listener
 	def __init__(self, index):
 		self.__index = index
 
+		self.__contract = None
+		self.__live_order = None
+		self.__close_order = None
+
 		self.__strike = None
 		self.__expiry = None
-		self.__target = None
+		self.__trigger = None
 
 		self.__premarket_decision = False
 		self.__initialized = False
 		self.__threshold_set = False
 		self.__opened = False
 		self.__live = False
-		self.__target_acquired = False
+		self.__trigger_set = False
+		self.__trigger_pulled = False
 		self.__closed = False		
 
 	def premarket_check(self):
@@ -106,34 +111,48 @@ class SvxyCallPosition(Position): # Scraper, Listener
 			contract = create_contract_option(option_info, self.__strike, self.__expiry)
 			order = create_order(order_details)
 
+			self.__contract = contract
+			self.__live_order = order
+
 			return (contract, order)
 
 		return None
-
-	def acquire_target(self):
-		'''blocks live until we have target'''
-		raise NotImplementedError
 
 	def close(self):
 		'''called from handler as exit'''
 		raise NotImplementedError
 
 	def data_handler(self, msg):
-		'''routes to correct handler'''
-		'''wait is this just like tws_manager?'''
-		if self.__target_acquired:
+		if self.__trigger_pulled:
+			return
+
+		if self.__trigger_set and not self.__trigger_pulled:
 			# check if we should close
-			pass
+			if msg.typeName is 'tickOptionComputation':
+				if msg.optPrice > self.__trigger:
+					self.close()
+					self.__trigger_pulled = True
 		else:
-			if msg.typeName is 'updatePortfolio':
-				pass
-				### START HERE ### rhestin
+			if msg.typeName is 'updatePortfolio' and not self.__trigger_set and not self.__trigger_pulled:
 				# if contract is my contract
 				#   price paid?
-				#   acquire target
-				# *ADD COMPARE CONTRACT FOR OPTION/STOCK TO CONTRACT.PY
+				#   set trigger
 
+				is_match = False
+				try:
+					is_match = compare_option_contract(self.__contract, msg.contract)
+				except:
+					return
 
+				if is_match:
+					#determine trigger
+					trigger_info = self.__index['trigger']
+					trigger_type = trigger_info['type']
+					#the idea is that there would potentially be many types...
+					if trigger_type is 'profit_ratio':
+						modifier_ratio = trigger_info['ratio']
+						self.__trigger = msg.averageCost * modifier_ratio / float(self.__contract.m_multiplier)
+						self.__trigger_set = True
 
 
 	@staticmethod

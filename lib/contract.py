@@ -42,7 +42,7 @@ def craft_contract_option(data, strike, expiry):
 
 
 def create_order(data):
-	if isinstance(data, dict)
+	if isinstance(data, dict):
 		try:
 			order = Order()
 			order.m_orderType = data['type']
@@ -54,3 +54,34 @@ def create_order(data):
 	else:
 		raise TypeError	
 
+def compare_stock_contract(self, first, second):
+	if isinstance(first, Contract) and isinstance(second, Contract):		
+		try:
+			assert first.m_symbol == second.m_symbol
+			assert first.m_secType == second.m_secType
+			assert first.m_primaryExch == second.m_primaryExch
+			assert first.m_exchange == second.m_exchange
+			assert first.m_currency == second.m_currency
+			return True
+		except:
+			return False
+	else:
+		raise TypeError
+
+def compare_option_contract(self, first, second):
+	if isinstance(first, Contract) and isinstance(second, Contract):		
+		try:
+			assert first.m_symbol == second.m_symbol
+			assert first.m_secType == second.m_secType
+			assert first.m_primaryExch == second.m_primaryExch
+			assert first.m_exchange == second.m_exchange
+			assert first.m_currency == second.m_currency
+			assert first.m_multiplier == second.m_multiplier
+			assert first.m_right == second.m_right
+			assert first.m_expiry == second.m_expiry
+			assert first.m_strike == second.m_strike
+			return newContract
+		except:
+			return False
+	else:
+		raise TypeError
