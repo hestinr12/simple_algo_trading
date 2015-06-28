@@ -35,9 +35,11 @@ class SvxyStrategy(Strategy): # Scraper, Listener
 		self._premarket_decision = False
 		
 		try:
+			print('trying')
 			value = self.fetch_value_from_url_with_scrape_id(info)
-			if value >= 3.0:
-				self._premarket_decision = True # TAG:NotGeneric
+			print(value)
+			if value >= 3.0:	# TAG:NotGeneric NOTE: needs value AND comporator fields in data!!!
+				self._premarket_decision = True 
 		except:
 			pass
 
@@ -78,10 +80,10 @@ class SvxyStrategy(Strategy): # Scraper, Listener
 					strike = rounder(strike)
 
 				if should_offset:
-					strike += info['strike_offset_value']
+					strike_offset_value = info['strike_offset_value']
+					strike += strike_offset_value
 
 				self._strike = strike
-
 
 				date = datetime.date.today()
 				today = datetime.date.today().ctime()
@@ -96,8 +98,9 @@ class SvxyStrategy(Strategy): # Scraper, Listener
 					offset -= 1
 
 				self._initialized = True
-			finally:
-				pass
+			except:
+				raise ValueError
+
 
 	def live(self):
 		'''if self._premarket_decision and not self._initialized:
@@ -169,19 +172,17 @@ class SvxyStrategy(Strategy): # Scraper, Listener
 		self._closed = True
 
 	@staticmethod
-	def fetch_value_from_url_with_scrape_id(info):
-		
+	def fetch_value_from_url_with_scrape_id(index):
+		info = index['info']
 		url = info['url']
 		scrape_id = info['scrape_id']
 		inverse_modifier_from_class = None
-		
+
 		if 'inverse_modifier_from_class' in info:
 			inverse_modifier_from_class = info['inverse_modifier_from_class']
-
 		result = requests.get(url)
-		assert result.status == 200
+		assert result.status_code == 200
 		body = result.text
-		
 		soup = BeautifulSoup(body)
 		scraped_element = soup.find(id=scrape_id)
 

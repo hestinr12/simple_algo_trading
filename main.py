@@ -2,7 +2,7 @@ import yaml
 import sched
 import time
 import datetime
-from multiprocessing import Process, Queue
+from multiprocessing import Queue
 from lib.demo_strategy import SvxyStrategy
 
 
@@ -23,10 +23,10 @@ default_order_id = 1  # not entirely safe...
 #default config
 config_file = './data_config.yml'
 
-
-def trade_worker(tws_manager, trades):
+#@asyncio.coroutine
+def trade_worker(tws_manager, trader_queue):
 	while True:
-		trade = trades.get()
+		trade = yield from trader_queue.get()
 		if trade == None:
 			break
 		else:
@@ -38,9 +38,8 @@ def trade_worker(tws_manager, trades):
 			except:
 				raise RuntimeError
 
-def main():
+def start():
 	''' Entry into basic market functionality '''
-	
 	# See examples/data_config.json for some example formats 
 	try:
 		config = yaml.load(open(config_file, 'r'))
@@ -48,10 +47,12 @@ def main():
 		print('Config file not found')
 		raise ValueError
 
-	trader_queue = Queue()
-	tws_manager = (tws_port, tws_client_id, default_order_id) 
-	trader_process = Process(target=trade_worker, args=(tws_manager,))
+	print(config)
 
+	tws_manager = (tws_port, tws_client_id, default_order_id) 
+
+	trader_queue = Queue()
+	#asyncio.async(trade_worker(tws_manager, trader_queue))
 	
 	demo_pos = SvxyStrategy(config[0], trader_queue)
 
@@ -66,8 +67,16 @@ def main():
 	*Instructions derived from data in future...
 
 	'''
+	###START HERE
+	# The process needs to be split 
+	# so that the premarket is sync
+	# and the live market is async
 
-	if demo_pos.premarket_check():
+	check = demo_pos.premarket_check()
+
+	print(check)
+
+	if check:
 		demo_pos.initialize_order()
 		pieces = demo_pos.live()
 		tws_manager.register_all(demo_pos.data_handler)
@@ -78,4 +87,5 @@ def main():
 			sleep(1)
 
 if __name__ == '__main__':
-	main()
+	print('main')
+	start()
