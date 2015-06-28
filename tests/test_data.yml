@@ -1,0 +1,5 @@
+strategy:
+  premarket: {test: test}
+  initialize: {test: test}
+  live: {test: test}
+  close: {test: test}
