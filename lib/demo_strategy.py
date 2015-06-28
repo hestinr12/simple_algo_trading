@@ -10,10 +10,10 @@ from lib.contract import *
 
 
 class SvxyStrategy(Strategy): # Scraper, Listener
-	def __init__(self, index, trade_queue):
+	def __init__(self, index, tws_manager):
 		super().__init__()
 		self._index = index
-		self._trade_queue = trade_queue
+		self._tws_manager = tws_manager
 
 		self._contract = None
 		self._live_order = None
@@ -157,10 +157,8 @@ class SvxyStrategy(Strategy): # Scraper, Listener
 
 	def close(self):
 		'''called from handler as exit'''
-		trade_contract = self._contract
-
-		order_info = self._index['close']['order']
 		
+		order_info = self._index['close']['order']
 		action = order_info['action']
 		quantity = order_info['quantity']
 		otype = order_info['type']
@@ -168,7 +166,7 @@ class SvxyStrategy(Strategy): # Scraper, Listener
 		self._close_order = create_order(action, quantity, otype)
 
 		#Protocol - (<Contract>, <Order>)
-		self._trade_queue.put((self._contract, self._close_order))
+		self._tws_manager.placeOrder(self._contract, self._close_order)
 		self._closed = True
 
 	@staticmethod

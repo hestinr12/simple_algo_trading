@@ -47,14 +47,12 @@ def start():
 		print('Config file not found')
 		raise ValueError
 
-	print(config)
-
 	tws_manager = (tws_port, tws_client_id, default_order_id) 
 
 	trader_queue = Queue()
 	#asyncio.async(trade_worker(tws_manager, trader_queue))
 	
-	demo_pos = SvxyStrategy(config[0], trader_queue)
+	demo_pos = SvxyStrategy(config[0], tws_manager)
 
 	'''
 	Position Lifecycle:
