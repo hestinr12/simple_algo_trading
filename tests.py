@@ -1,8 +1,47 @@
 import unittest
-import lib.router as router
 import examples
 import json
 import time
+import yaml
+
+import lib.router as router
+from lib.demo_strategy import SvxyStrategy
+
+
+class SvxyStrategyTests(unittest.TestCase):
+
+	def setup(self):
+		self.test_data = yaml.load(open('test_data.yml', 'r'))
+		self.s = SvxyStrategy(None, None)
+
+	def stub_fetch(value):
+		return lambda x: value
+
+	def stub_exception():
+		raise Exception
+
+
+	def test_premarket_check_pass(self):
+		self.s.fetch_value_from_url_with_scrape_id = self.stub_fetch(5)
+		data = self.test_data['premarket_pass']
+		strat = SvxyStrategy(data, None)
+		result = self.strat.premarket_check()
+		assert result is True		
+
+	def test_premarket_check_fail(self):
+		self.s.fetch_value_from_url_with_scrape_id = self.stub_fetch(2)
+		data = self.test_data['premarket_fail']
+		strat = SvxyStrategy(data, None)
+		result = self.strat.premarket_check()
+		assert result is False
+
+	def test_premarket_check_exception(self):
+		self.s.fetch_value_from_url_with_scrape_id = self.stub_exception()
+		result = self.strat.premarket_check()
+		assert result is False
+
+	# TODO: needs good tests for data_handler
+
 
 class TwsManagerTests(unittest.TestCase):
 	

@@ -55,7 +55,7 @@ class TwsManager():
 			for p in self.__all_positions:
 				p.data_handler(msg)
 
-	def placeOrder(self, contract, order):
+	def place_order(self, contract, order):
 		if not isinstance(contract, Contract):
 			raise ValueError
 		if not isinstance(order, Order):

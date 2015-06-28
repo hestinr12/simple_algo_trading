@@ -13,6 +13,13 @@ class SvxyStrategy(Strategy): # Scraper, Listener
 	def __init__(self, index, trade_queue):
 		super().__init__(index, trade_queue)	
 
+	def is_closed(self):
+		return self.__closed
+
+	def set_index(self, new):
+		'''Convenience for testing'''
+		self.__index = new
+
 	def premarket_check(self):
 		try:
 			info = self.__index['premarket']
@@ -135,15 +142,19 @@ class SvxyStrategy(Strategy): # Scraper, Listener
 
 	def close(self):
 		'''called from handler as exit'''
-		order_info = self.__index['close']['order']
 		trade_contract = self.__contract
+
+		order_info = self.__index['close']['order']
+		
 		action = order_info['action']
 		quantity = order_info['quantity']
 		otype = order_info['type']
-		order = create_order(action, quantity, otype)
-		self.__close_order = order
+
+		self.__close_order = create_order(action, quantity, otype)
+
 		#Protocol - (<Contract>, <Order>)
 		self.__trade_queue.put((self.__contract, self.__close_order))
+		self.__closed = True
 
 	@staticmethod
 	def fetch_value_from_url_with_scrape_id(info):
