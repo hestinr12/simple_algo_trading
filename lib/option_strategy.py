@@ -1,4 +1,5 @@
 import math
+import operator
 
 import requests
 from bs4 import BeautifulSoup
@@ -9,7 +10,7 @@ from lib.contract import *
 
 
 
-class SvxyStrategy(Strategy): # Scraper, Listener
+class OptionStrategy(Strategy): # Scraper, Listener
 	def __init__(self, index, trade_queue):
 		super().__init__()
 		self._index = index
@@ -31,14 +32,34 @@ class SvxyStrategy(Strategy): # Scraper, Listener
 		self._index = new
 
 	def premarket_check(self):
-		info = self._index['premarket']
+		info = self._index['premarket']['info']
+		control = self._index['premarket']['control']
+		control_value = control['value']
+		comparative = self._index['premarket']['comparative']
+		comparative_func = None
+		
+		if comparative is 'lt':
+			comparative_func = operator.lt
+		elif comparative is 'le':
+			comparative_func = operator.le
+		elif comparative is 'eq':
+			comparative_func = operator.eq
+		elif comparative is 'ne':
+			comparative_func = operator.ne
+		elif comparative is 'gt':
+			comparative_func = operator.gt
+		elif comparative is 'ge':
+			comparative_func = operator.ge
+		else:
+			raise ValueError
+
+		# default
 		self._premarket_decision = False
 		
 		try:
-			print('trying')
 			value = self.fetch_value_from_url_with_scrape_id(info)
 			print(value)
-			if value >= 3.0:	# TAG:NotGeneric NOTE: needs value AND comporator fields in data!!!
+			if comparative_func(value, control_value):	
 				self._premarket_decision = True 
 		except:
 			pass
@@ -173,7 +194,6 @@ class SvxyStrategy(Strategy): # Scraper, Listener
 
 	@staticmethod
 	def fetch_value_from_url_with_scrape_id(index):
-		info = index['info']
 		url = info['url']
 		scrape_id = info['scrape_id']
 		inverse_modifier_from_class = None
