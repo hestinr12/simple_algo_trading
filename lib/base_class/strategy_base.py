@@ -1,18 +1,38 @@
+from abc import ABCMeta, abstractmethod
 
-class TradingStrategy():
+class Strategy(metaclass=ABCMeta):
 	'''
-	This is the base class/ghetto interface for a trading strategy. The subclass
-	of this base should implement these methods as appropriate in order to execute
-	the stretegy.
+	An implemented Strategy is a handcrafted tool, that details 
+	how, when, and how a position should be executed 
 
-	...isn't this why they made ABCs? Or, you know...
 	'''
 
-	def fetch(self):
+	def __init__(self, index, trade_queue):
+		pass
+		'''
+		self.__premarket_decision = False
+		self.__initialized = False
+		self.__threshold_set = False
+		self.__opened = False
+		self.__live = False
+		self.__closed = False
+		'''
+	@abstractmethod
+	def premarket_check(self):
 		raise NotImplementedError
 
+	@abstractmethod
+	def initialize_order(self):
+		raise NotImplementedError
+
+	@abstractmethod
 	def live(self):
 		raise NotImplementedError
 
-	def end(self):
+	@abstractmethod
+	def data_handler(self, msg):
+		raise NotImplementedError
+
+	@abstractmethod
+	def close(self):
 		raise NotImplementedError

@@ -3,32 +3,15 @@ import math
 import requests
 from bs4 import BeautifulSoup
 
-from lib.base_class.position_base import Position
+from lib.base_class.strategy_base import Strategy
 from lib.contract import *
 
 
 
 
-class SvxyCallPosition(Position): # Scraper, Listener
-	def __init__(self, index):
-		self.__index = index
-
-		self.__contract = None
-		self.__live_order = None
-		self.__close_order = None
-
-		self.__strike = None
-		self.__expiry = None
-		self.__trigger = None
-
-		self.__premarket_decision = False
-		self.__initialized = False
-		self.__threshold_set = False
-		self.__opened = False
-		self.__live = False
-		self.__trigger_set = False
-		self.__trigger_pulled = False
-		self.__closed = False		
+class SvxyStrategy(Strategy): # Scraper, Listener
+	def __init__(self, index, trade_queue):
+		super().__init__(index, trade_queue)	
 
 	def premarket_check(self):
 		try:
@@ -118,10 +101,6 @@ class SvxyCallPosition(Position): # Scraper, Listener
 
 		return None
 
-	def close(self):
-		'''called from handler as exit'''
-		raise NotImplementedError
-
 	def data_handler(self, msg):
 		if self.__trigger_pulled:
 			return
@@ -154,6 +133,17 @@ class SvxyCallPosition(Position): # Scraper, Listener
 						self.__trigger = msg.averageCost * modifier_ratio / float(self.__contract.m_multiplier)
 						self.__trigger_set = True
 
+	def close(self):
+		'''called from handler as exit'''
+		order_info = self.__index['close']['order']
+		trade_contract = self.__contract
+		action = order_info['action']
+		quantity = order_info['quantity']
+		otype = order_info['type']
+		order = create_order(action, quantity, otype)
+		self.__close_order = order
+		#Protocol - (<Contract>, <Order>)
+		self.__trade_queue.put((self.__contract, self.__close_order))
 
 	@staticmethod
 	def fetch_value_from_url_with_scrape_id(info):

@@ -2,7 +2,8 @@ import yaml
 import sched
 import time
 import datetime
-from lib.demo_position import SvxyCallPosition
+from multiprocessing import Process, Queue
+from lib.demo_strategy import SvxyStrategy
 
 
 
@@ -20,9 +21,22 @@ tws_client_id = 1234
 default_order_id = 1  # not entirely safe...
 
 #default config
-config_file = './data_config.yaml'
+config_file = './data_config.yml'
 
 
+def worker(tws_manager, trades):
+	while True:
+		trade = trades.get()
+		if trade == None:
+			break
+		else:
+			#Protocol - (<Contract>, <Order>)
+			try:	
+				contract = trade[0]
+				order = trade[1]
+				tws_manager.placeOrder(contract, order)
+			except:
+				raise RuntimeError
 
 def main():
 	''' Entry into basic market functionality '''
@@ -34,9 +48,12 @@ def main():
 		print('Config file not found')
 		raise ValueError
 
+	trader_queue = Queue()
 	tws_manager = (tws_port, tws_client_id, default_order_id) 
+
+
 	
-	demo_pos = SvxyCallPosition(config[0])
+	demo_pos = SvxyStrategy(config[0], trader_queue)
 
 	'''
 	Position Lifecycle:
