@@ -11,25 +11,37 @@ from lib.contract import *
 
 class SvxyStrategy(Strategy): # Scraper, Listener
 	def __init__(self, index, trade_queue):
-		super().__init__(index, trade_queue)	
+		super().__init__()
+		self._index = index
+		self._trade_queue = trade_queue
+
+		self._contract = None
+		self._live_order = None
+		self._close_order = None
+
+		self._strike = None
+		self._expiry = None
+		self._trigger = None
 
 	def is_closed(self):
-		return self.__closed
+		return self._closed
 
 	def set_index(self, new):
 		'''Convenience for testing'''
-		self.__index = new
+		self._index = new
 
 	def premarket_check(self):
+		info = self._index['premarket']
+		self._premarket_decision = False
+		
 		try:
-			info = self.__index['premarket']
 			value = self.fetch_value_from_url_with_scrape_id(info)
-			self.__premarket_decision = True
+			if value >= 3.0:
+				self._premarket_decision = True # TAG:NotGeneric
+		except:
+			pass
 
-			if value >= 3.0: # TAG:NotGeneric
-				return True
-		finally:
-			return False
+		return self._premarket_decision
 
 	def initialize_order(self):
 		'''
@@ -43,9 +55,9 @@ class SvxyStrategy(Strategy): # Scraper, Listener
 		Do you always round a stike?
 		'''
 
-		if self.__premarket_decision:
+		if self._premarket_decision:
 			try:
-				info = self.__index['initialize']
+				info = self._index['initialize']
 				value = self.fetch_value_from_url_with_scrape_id(info)
 				strike = value
 				should_round = info['round_strike']
@@ -60,7 +72,7 @@ class SvxyStrategy(Strategy): # Scraper, Listener
 					elif round_type is 'floor':
 						rounder = math.floor
 					else:
-						print('Invalid round type in:\n{}'.format(self.__index))
+						print('Invalid round type in:\n{}'.format(self._index))
 						raise ValueError
 
 					strike = rounder(strike)
@@ -68,7 +80,7 @@ class SvxyStrategy(Strategy): # Scraper, Listener
 				if should_offset:
 					strike += info['strike_offset_value']
 
-				self.__strike = strike
+				self._strike = strike
 
 
 				date = datetime.date.today()
@@ -79,82 +91,82 @@ class SvxyStrategy(Strategy): # Scraper, Listener
 
 				for day in week_days:
 					if day in today:
-						self.__expiry = '{}{}{}'.format(today.year, today.month, today.day+offset)
+						self._expiry = '{}{}{}'.format(today.year, today.month, today.day+offset)
 						break
 					offset -= 1
 
-				self.__initialized = True
+				self._initialized = True
 			finally:
 				pass
 
 	def live(self):
-		'''if self.__premarket_decision and not self.__initialized:
+		'''if self._premarket_decision and not self._initialized:
 			# try again?
 			return None
 		'''
 
-		if self.__premarket_decision and self.__initialized:
+		if self._premarket_decision and self._initialized:
 			'''Returns order to craft'''
-			option_info = self.__index['live']['info']
-			order_details = self.__index['live']['order']
+			option_info = self._index['live']['info']
+			order_details = self._index['live']['order']
 
-			contract = create_contract_option(option_info, self.__strike, self.__expiry)
+			contract = create_contract_option(option_info, self._strike, self._expiry)
 			order = create_order(order_details)
 
-			self.__contract = contract
-			self.__live_order = order
+			self._contract = contract
+			self._live_order = order
 
 			return (contract, order)
 
 		return None
 
 	def data_handler(self, msg):
-		if self.__trigger_pulled:
+		if self._trigger_pulled:
 			return
 
-		if self.__trigger_set and not self.__trigger_pulled:
+		if self._trigger_set and not self._trigger_pulled:
 			# check if we should close
 			if msg.typeName is 'tickOptionComputation':
-				if msg.optPrice > self.__trigger:
+				if msg.optPrice > self._trigger:
 					self.close()
-					self.__trigger_pulled = True
+					self._trigger_pulled = True
 		else:
-			if msg.typeName is 'updatePortfolio' and not self.__trigger_set and not self.__trigger_pulled:
+			if msg.typeName is 'updatePortfolio' and not self._trigger_set and not self._trigger_pulled:
 				# if contract is my contract
 				#   price paid?
 				#   set trigger
 
 				is_match = False
 				try:
-					is_match = compare_option_contract(self.__contract, msg.contract)
+					is_match = compare_option_contract(self._contract, msg.contract)
 				except:
 					return
 
 				if is_match:
 					#determine trigger
-					trigger_info = self.__index['trigger']
+					trigger_info = self._index['trigger']
 					trigger_type = trigger_info['type']
 					#the idea is that there would potentially be many types...
 					if trigger_type is 'profit_ratio':
 						modifier_ratio = trigger_info['ratio']
-						self.__trigger = msg.averageCost * modifier_ratio / float(self.__contract.m_multiplier)
-						self.__trigger_set = True
+						self._trigger = msg.averageCost * modifier_ratio / float(self._contract.m_multiplier)
+						self._trigger_set = True
 
 	def close(self):
 		'''called from handler as exit'''
-		trade_contract = self.__contract
+		trade_contract = self._contract
 
-		order_info = self.__index['close']['order']
+		order_info = self._index['close']['order']
 		
 		action = order_info['action']
 		quantity = order_info['quantity']
 		otype = order_info['type']
 
-		self.__close_order = create_order(action, quantity, otype)
+		self._close_order = create_order(action, quantity, otype)
 
 		#Protocol - (<Contract>, <Order>)
-		self.__trade_queue.put((self.__contract, self.__close_order))
-		self.__closed = True
+		self._trade_queue.put((self._contract, self._close_order))
+		self._closed = True
 
 	@staticmethod
 	def fetch_value_from_url_with_scrape_id(info):

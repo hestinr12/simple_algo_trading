@@ -1,5 +1,5 @@
 from lib.contract import *
-from lib.base_class.position_base import Position
+from lib.base_class.strategy_base import Strategy
 from ib.opt import ibConnection, Connection, message
 from ib.ext.Contract import Contract
 from ib.ext.Order import Order

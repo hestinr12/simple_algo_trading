@@ -1,20 +1,15 @@
 - premarket:
-    info: {inverse_modifier_from_class: qwidget-Red, scrape_id: qwidget_percent, scrape_type: value,
-      url: 'http://www.nasdaq.com/symbol/uvxy/premarket'}
+    info: {inverse_modifier_from_class: qwidget-Red, scrape_id: qwidget_percent, scrape_type: value, url: 'http://www.nasdaq.com/symbol/uvxy/premarket'}
     source: URL_SCRAPE
   initialize:
-    info: {scrape_id: qwidget_dollar, scrape_type: value,
-      round_strike: true, round_type: ceil, strike_offset: true, strike_offset_value: 0.5,
-      url: 'http://www.nasdaq.com/symbol/svxy'}
+    info: {scrape_id: qwidget_dollar, scrape_type: value, round_strike: true, round_type: ceil, strike_offset: true, strike_offset_value: 0.5, url: 'http://www.nasdaq.com/symbol/svxy'}
     source: URL_SCRAPE
   live:
-    info: {currency: USD, exchange: SMART, multiplier: 100, primary_exchange: SMART,
-      right: C, security_type: OPT, symbol: SVXY}
+    info: {currency: USD, exchange: SMART, multiplier: 100, primary_exchange: SMART, right: C, security_type: OPT, symbol: SVXY}
     order: {action: BUY, quantity: 20, type: MKT}
     trigger: {type: profit_ratio, modifier: 1.2}
     source: IB
   close:
-    info: {currency: USD, exchange: SMART, multiplier: 100, primary_exchange: SMART,
-      right: C, security_type: OPT, symbol: SVXY}
+    info: {currency: USD, exchange: SMART, multiplier: 100, primary_exchange: SMART, right: C, security_type: OPT, symbol: SVXY}
     order: {action: SELL, quantity: 20, type: MKT}
     source: IB
