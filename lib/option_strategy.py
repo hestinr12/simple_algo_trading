@@ -1,5 +1,7 @@
 import math
 import operator
+import time
+import datetime
 
 import requests
 from bs4 import BeautifulSoup
@@ -11,10 +13,10 @@ from lib.contract import *
 
 
 class OptionStrategy(Strategy): # Scraper, Listener
-	def __init__(self, index, trade_queue):
+	def __init__(self, index, tws_manager):
 		super().__init__()
 		self._index = index
-		self._trade_queue = trade_queue
+		self._tws_manager = tws_manager
 
 		self._contract = None
 		self._live_order = None
@@ -38,17 +40,17 @@ class OptionStrategy(Strategy): # Scraper, Listener
 		comparative = self._index['premarket']['comparative']
 		comparative_func = None
 		
-		if comparative is 'lt':
+		if comparative == 'lt':
 			comparative_func = operator.lt
-		elif comparative is 'le':
+		elif comparative == 'le':
 			comparative_func = operator.le
-		elif comparative is 'eq':
+		elif comparative == 'eq':
 			comparative_func = operator.eq
-		elif comparative is 'ne':
+		elif comparative == 'ne':
 			comparative_func = operator.ne
-		elif comparative is 'gt':
+		elif comparative == 'gt':
 			comparative_func = operator.gt
-		elif comparative is 'ge':
+		elif comparative == 'ge':
 			comparative_func = operator.ge
 		else:
 			raise ValueError
@@ -57,6 +59,7 @@ class OptionStrategy(Strategy): # Scraper, Listener
 		self._premarket_decision = False
 		
 		try:
+			print('trying')
 			value = self.fetch_value_from_url_with_scrape_id(info)
 			print(value)
 			if comparative_func(value, control_value):	
@@ -79,48 +82,56 @@ class OptionStrategy(Strategy): # Scraper, Listener
 		'''
 
 		if self._premarket_decision:
-			try:
-				info = self._index['initialize']
-				value = self.fetch_value_from_url_with_scrape_id(info)
-				strike = value
-				should_round = info['round_strike']
-				should_offset = info['strike_offset']
+			info = self._index['initialize']['info']
+			strike_modifiers = self._index['initialize']['strike_modifier']
+			value = self.fetch_value_from_url_with_scrape_id(info)
+			strike = value
+			should_round = strike_modifiers['round_strike']
+			should_offset = strike_modifiers['strike_offset']
 
-				if should_round:
-					round_type = info['round_type']
-					rounder = None
+			if should_round:
+				round_type = strike_modifiers['round_type']
+				rounder = None
 
-					if round_type is 'ceil':
-						rounder = math.ceil
-					elif round_type is 'floor':
-						rounder = math.floor
-					else:
-						print('Invalid round type in:\n{}'.format(self._index))
-						raise ValueError
+				if round_type == 'ceil':
+					rounder = math.ceil
+				elif round_type == 'floor':
+					rounder = math.floor
+				else:
+					print('Invalid round type in:\n{}'.format(self._index))
+					raise ValueError
 
-					strike = rounder(strike)
+				strike = rounder(strike)
 
-				if should_offset:
-					strike_offset_value = info['strike_offset_value']
-					strike += strike_offset_value
+			if should_offset:
+				strike_offset_value = strike_modifiers['strike_offset_value']
+				strike += strike_offset_value
 
-				self._strike = strike
+			self._strike = strike
 
-				date = datetime.date.today()
-				today = datetime.date.today().ctime()
-				offset = 4
-				week_days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
-				# expiry date is the nearest friday from now
+			date = datetime.date.today()
+			today = datetime.date.today().ctime()
+			offset = 4
+			week_days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
+			# expiry date is the nearest friday from now
 
-				for day in week_days:
-					if day in today:
-						self._expiry = '{}{}{}'.format(today.year, today.month, today.day+offset)
-						break
-					offset -= 1
+			print(date.day)
 
+
+			### CRITICAL
+			# DOES NOT HANDLE MONTH OVER FLOW
+			#
+			
+			for day in week_days:
+				if day in today:
+					self._expiry = '{}{}{}'.format(today.year, today.month, today.day+offset)
+					break
+				offset -= 1
+
+			print(self._expiry)
+
+			if self._expiry != None and self._strike != None:
 				self._initialized = True
-			except:
-				raise ValueError
 
 
 	def live(self):
@@ -134,13 +145,13 @@ class OptionStrategy(Strategy): # Scraper, Listener
 			option_info = self._index['live']['info']
 			order_details = self._index['live']['order']
 
-			contract = create_contract_option(option_info, self._strike, self._expiry)
+			contract = craft_contract_option(option_info, self._strike, self._expiry)
 			order = create_order(order_details)
 
 			self._contract = contract
 			self._live_order = order
 
-			return (contract, order)
+			self._tws_manager.place_order(contract, order)
 
 		return None
 
@@ -193,7 +204,7 @@ class OptionStrategy(Strategy): # Scraper, Listener
 		self._closed = True
 
 	@staticmethod
-	def fetch_value_from_url_with_scrape_id(index):
+	def fetch_value_from_url_with_scrape_id(info):
 		url = info['url']
 		scrape_id = info['scrape_id']
 		inverse_modifier_from_class = None

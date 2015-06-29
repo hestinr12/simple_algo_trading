@@ -2,11 +2,9 @@ from ib.ext.Contract import Contract
 from ib.ext.Order import Order
 
 
-def craft_contract_stock(data):
-	if isinstance(data, dict):
-		try:
-			details = data['info']
-			
+def craft_contract_stock(details):
+	if isinstance(details, dict):
+		try:			
 			newContract = Contract()
 			newContract.m_symbol = details['symbol']
 			newContract.m_secType = details['security_type']
@@ -19,11 +17,11 @@ def craft_contract_stock(data):
 	else:
 		raise TypeError
 
-def craft_contract_option(data, strike, expiry):
-	if isinstance(data, dict):
-		try:
-			details = data['info']
-			
+def craft_contract_option(details, strike, expiry):
+	print(strike)
+	print(expiry)
+	if isinstance(details, dict):
+		try:			
 			newContract = Contract()
 			newContract.m_symbol = details['symbol']
 			newContract.m_secType = details['security_type']

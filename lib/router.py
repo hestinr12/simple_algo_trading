@@ -49,6 +49,9 @@ class TwsManager():
 		self._tws.cancelMktData(order_id)
 
 	def route_message(self, msg):
+		if msg.typeName is 'error':
+			print(msg)
+			return
 		self._data_router[msg.tickerId](msg)
 		#send account updates to all positions
 		if msg.typeName in self._account_updates:

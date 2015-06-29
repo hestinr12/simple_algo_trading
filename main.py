@@ -1,9 +1,10 @@
 import yaml
 import sched
-import time
+from time import sleep
 import datetime
 from multiprocessing import Queue
-from lib.demo_strategy import SvxyStrategy
+from lib.option_strategy import OptionStrategy
+from lib.router import TwsManager
 
 
 
@@ -49,12 +50,12 @@ def start():
 
 	print(config)
 
-	tws_manager = (tws_port, tws_client_id, default_order_id) 
+	tws_manager = TwsManager(tws_port, tws_client_id, default_order_id) 
 
 	trader_queue = Queue()
 	#asyncio.async(trade_worker(tws_manager, trader_queue))
 	
-	demo_pos = SvxyStrategy(config[0], trader_queue)
+	demo_pos = OptionStrategy(config[0], tws_manager)
 
 	'''
 	Position Lifecycle:
@@ -80,9 +81,8 @@ def start():
 		demo_pos.initialize_order()
 		pieces = demo_pos.live()
 		tws_manager.register_all(demo_pos.data_handler)
-		tws_manager.connect()
+		#tws_manager.connect()
 		sleep(5)
-		tws_manager.place_order(pieces[0], piece[1])
 		while not demo_pos.is_closed():
 			sleep(1)
 
