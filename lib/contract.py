@@ -31,7 +31,7 @@ def craft_contract_option(details, strike, expiry):
 			newContract.m_multiplier = details['multiplier']
 			newContract.m_right = details['right']
 			newContract.m_expiry = expiry
-			newOptContract.m_strike = strike # not sure how comfortable I am with float representation...anyway...
+			newContract.m_strike = strike # not sure how comfortable I am with float representation...anyway...
 			return newContract
 		except:
 			raise TypeError

@@ -2,6 +2,7 @@ import math
 import operator
 import time
 import datetime
+from time import sleep
 
 import requests
 from bs4 import BeautifulSoup
@@ -10,6 +11,13 @@ from lib.base_class.strategy_base import Strategy
 from lib.contract import *
 
 
+def all_closures():
+
+	closures = {
+		'20150703':'Friday -- Independence Day weekend'
+	}
+
+	return closures.keys()
 
 
 class OptionStrategy(Strategy): # Scraper, Listener
@@ -34,6 +42,8 @@ class OptionStrategy(Strategy): # Scraper, Listener
 		self._index = new
 
 	def premarket_check(self):
+		print('premarket')
+
 		info = self._index['premarket']['info']
 		control = self._index['premarket']['control']
 		control_value = control['value']
@@ -80,6 +90,7 @@ class OptionStrategy(Strategy): # Scraper, Listener
 
 		Do you always round a stike?
 		'''
+		print('initialize')
 
 		if self._premarket_decision:
 			info = self._index['initialize']['info']
@@ -109,24 +120,33 @@ class OptionStrategy(Strategy): # Scraper, Listener
 
 			self._strike = strike
 
+
+
 			date = datetime.date.today()
 			today = datetime.date.today().ctime()
 			offset = 4
 			week_days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri']
 			# expiry date is the nearest friday from now
+			# but what if it *is* friday?
+			# CRITICAL: MARKET HOLIDAYS
 
-			print(date.day)
-
-
-			### CRITICAL
-			# DOES NOT HANDLE MONTH OVER FLOW
-			#
-			
 			for day in week_days:
 				if day in today:
-					self._expiry = '{}{}{}'.format(today.year, today.month, today.day+offset)
 					break
 				offset -= 1
+
+			d = datetime.date.today() + datetime.timedelta(days=offset)
+			day = "0{}".format(d.day) if len(str(d.day)) == 1 else str(d.day)
+			month = "0{}".format(d.month) if len(str(d.month)) == 1 else str(d.month)
+			year = str(d.year)
+
+			self._expiry = "{}{}{}".format(year, month, day)
+
+			# basic algorithm for the one closure in the lib
+			if self._expiry in all_closures():
+				day = "0{}".format(d.day-1)
+				self._expiry = "{}{}{}".format(year, month, day)
+
 
 			print(self._expiry)
 
@@ -140,6 +160,8 @@ class OptionStrategy(Strategy): # Scraper, Listener
 			return None
 		'''
 
+		print('live')
+
 		if self._premarket_decision and self._initialized:
 			'''Returns order to craft'''
 			option_info = self._index['live']['info']
@@ -151,11 +173,15 @@ class OptionStrategy(Strategy): # Scraper, Listener
 			self._contract = contract
 			self._live_order = order
 
+			self._tws_manager.request_market_data_option(contract, self.data_handler)
+			sleep(4)
 			self._tws_manager.place_order(contract, order)
+			sleep(4)
 
 		return None
 
 	def data_handler(self, msg):
+
 		if self._trigger_pulled:
 			return
 
@@ -166,12 +192,17 @@ class OptionStrategy(Strategy): # Scraper, Listener
 					self.close()
 					self._trigger_pulled = True
 		else:
+
+			print(msg.typeName)
+
 			if msg.typeName is 'updatePortfolio' and not self._trigger_set and not self._trigger_pulled:
 				# if contract is my contract
 				#   price paid?
 				#   set trigger
 
 				is_match = False
+
+				print('attempting contract match')
 				try:
 					is_match = compare_option_contract(self._contract, msg.contract)
 				except:
@@ -179,6 +210,7 @@ class OptionStrategy(Strategy): # Scraper, Listener
 
 				if is_match:
 					#determine trigger
+					print('matched True!')
 					trigger_info = self._index['trigger']
 					trigger_type = trigger_info['type']
 					#the idea is that there would potentially be many types...
@@ -189,6 +221,7 @@ class OptionStrategy(Strategy): # Scraper, Listener
 
 	def close(self):
 		'''called from handler as exit'''
+		print('CLOSED')
 		trade_contract = self._contract
 
 		order_info = self._index['close']['order']
@@ -200,7 +233,7 @@ class OptionStrategy(Strategy): # Scraper, Listener
 		self._close_order = create_order(action, quantity, otype)
 
 		#Protocol - (<Contract>, <Order>)
-		self._trade_queue.put((self._contract, self._close_order))
+		self._tws_manager.place_order(contract, order)
 		self._closed = True
 
 	@staticmethod
@@ -212,10 +245,13 @@ class OptionStrategy(Strategy): # Scraper, Listener
 		if 'inverse_modifier_from_class' in info:
 			inverse_modifier_from_class = info['inverse_modifier_from_class']
 		result = requests.get(url)
+		print(result.status_code)
 		assert result.status_code == 200
 		body = result.text
 		soup = BeautifulSoup(body)
 		scraped_element = soup.find(id=scrape_id)
+
+		assert scraped_element is not None
 
 		# so bad...
 		found_value = scraped_element.text #trim the % symbol...this is terrible logic btw

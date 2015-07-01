@@ -19,7 +19,8 @@ end_of_day = 15 #18 * 60 *60
 # TWS default settings
 tws_port = 7496
 tws_client_id = 1234
-default_order_id = 1  # not entirely safe...
+default_order_id = 2000100  # not entirely safe...
+default_account_id = 'DU15145'
 
 #default config
 config_file = './data_config.yml'
@@ -50,7 +51,7 @@ def start():
 
 	print(config)
 
-	tws_manager = TwsManager(tws_port, tws_client_id, default_order_id) 
+	tws_manager = TwsManager(tws_port, tws_client_id, default_order_id, default_account_id) 
 
 	trader_queue = Queue()
 	#asyncio.async(trade_worker(tws_manager, trader_queue))
@@ -79,9 +80,10 @@ def start():
 
 	if check:
 		demo_pos.initialize_order()
+		tws_manager.connect()
+		sleep(3)
 		pieces = demo_pos.live()
 		tws_manager.register_all(demo_pos.data_handler)
-		#tws_manager.connect()
 		sleep(5)
 		while not demo_pos.is_closed():
 			sleep(1)

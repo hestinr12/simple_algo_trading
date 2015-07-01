@@ -1,3 +1,5 @@
+from random import randint
+
 from lib.contract import *
 from lib.base_class.strategy_base import Strategy
 from ib.opt import ibConnection, Connection, message
@@ -8,23 +10,25 @@ from ib.ext.Order import Order
 class TwsManager():
 	''' Helper class for TWS interactions '''
 
-	def __init__(self, tws_port, tws_client_id, default_order_id):
+	def __init__(self, tws_port, tws_client_id, default_order_id, account_id):
 		''' Pass in the TWS connection object and be responsible for it''' 
 		self._tws = Connection.create(port=tws_port, clientId=tws_client_id)
 		self.connected = False
 		self._order_id = default_order_id
+		self.account_id = account_id
 		self._account_updates = ['UpdatePortfolio']
 		self._data_router = {} # order_id:position
 		self.__all_positions = list()
 
 	def get_order_id(self):
-		old_id = self._order_id
 		self._order_id += 1
-		return old_id
+		return self._order_id
+		
 
 	def connect(self):
 		self._tws.registerAll(self.route_message)
 		self._tws.connect()
+		self._tws.reqAccountUpdates(True, self.account_id)
 		self.connected = True
 
 	def disconnect(self):
@@ -52,7 +56,12 @@ class TwsManager():
 		if msg.typeName is 'error':
 			print(msg)
 			return
-		self._data_router[msg.tickerId](msg)
+
+		try:
+			self._data_router[msg.id](msg)
+		except:
+			pass
+
 		#send account updates to all positions
 		if msg.typeName in self._account_updates:
 			for p in self.__all_positions:
@@ -66,39 +75,40 @@ class TwsManager():
 
 		order_id = self.get_order_id()
 		self._tws.placeOrder(order_id, contract, order)
+		print('done with order')
 		
 
-	def request_market_data_stock(self, position):
-		''' Open data spouts for each index past, fitted with appropriate
-		data to craft TWS Contract objects (for example, see examples/contract.py)
-		
-		Returns: order id of the data stream
+	#def request_market_data_stock(self, position):
+		#''' Open data spouts for each index past, fitted with appropriate
+		#data to craft TWS Contract objects (for example, see examples/contract.py)
+#		
+		#Returns: order id of the data stream
+#
+		#WARNING - Data will begin pouring in immediately to any register handlers. Handlers
+		#should be established BEFORE this is called!!!
+		#'''
+#
+		#if not self.connected:
+			#raise RuntimeError
+#
+		#if not isinstance(position, Position):
+			#raise ValueError
+#			
+		#new_contract = None
+		#sec_type = position.index['info']['security_type']
+#
+		#if sec_type == 'STK':
+			#new_contract = craft_contract_stock(index)
+		#else:
+			#raise ValueError
+#
+		#order_id = self.get_order_id()
+		#self._tws.reqMktData(order_id, new_contract, '', False)
+		#self._data_contracts[order_id] = position.data_handler
+#
+		#return order_id
 
-		WARNING - Data will begin pouring in immediately to any register handlers. Handlers
-		should be established BEFORE this is called!!!
-		'''
-
-		if not self.connected:
-			raise RuntimeError
-
-		if not isinstance(position, Position):
-			raise ValueError
-			
-		new_contract = None
-		sec_type = position.index['info']['security_type']
-
-		if sec_type == 'STK':
-			new_contract = craft_contract_stock(index)
-		else:
-			raise ValueError
-
-		order_id = self.get_order_id()
-		self._tws.reqMktData(order_id, new_contract, '', False)
-		self._data_contracts[order_id] = position.data_handler
-
-		return order_id
-
-	def request_market_data_option(self, position):
+	def request_market_data_option(self, contract, handler):
 		''' Open data spouts for each index past, fitted with appropriate
 		data to craft TWS Contract objects (for example, see examples/contract.py)
 
@@ -110,23 +120,14 @@ class TwsManager():
 		if not self.connected:
 			raise RuntimeError
 
-		if not isinstance(position, Position):
-			raise ValueError
-			
-		new_contract = None
-		sec_type = position.get_security_type()
-		index = position.get_index_descrption()
-
-		if sec_type == 'OPT':
-			new_contract = craft_contract_option(index, strike, expiry)
-		else:
+		if not isinstance(contract, Contract):
 			raise ValueError
 
 		order_id = self.get_order_id()
-		self._tws.reqMktData(order_id, new_contract, '', False)
-		self._data_contracts[order_id] = position.data_handler
-
-		return order_id
+		self._tws.reqMktData(order_id, contract, '', False)
+		self._data_router[order_id] = handler
+		print('data requset is = {}'.format(order_id))
+		print('done with data request')
 
 	def request_market_data_option_snapshot(self, position, callback):
 		''' Open data spouts for each index past, fitted with appropriate
