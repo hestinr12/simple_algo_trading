@@ -193,7 +193,7 @@ class OptionStrategy(Strategy): # Scraper, Listener
 					self._trigger_pulled = True
 		else:
 
-			print(msg.typeName)
+			#print(msg.typeName)
 
 			if msg.typeName is 'updatePortfolio' and not self._trigger_set and not self._trigger_pulled:
 				# if contract is my contract
@@ -205,19 +205,22 @@ class OptionStrategy(Strategy): # Scraper, Listener
 				print('attempting contract match')
 				try:
 					is_match = compare_option_contract(self._contract, msg.contract)
-				except:
+					print(is_match)
+				except Exception as e:
+					raise e
 					return
 
 				if is_match:
 					#determine trigger
 					print('matched True!')
-					trigger_info = self._index['trigger']
-					trigger_type = trigger_info['type']
+					trigger_info = self._index['live']['trigger']
+					trigger_method = trigger_info['method']
 					#the idea is that there would potentially be many types...
-					if trigger_type is 'profit_ratio':
-						modifier_ratio = trigger_info['ratio']
+					if trigger_method == 'profit_ratio':
+						modifier_ratio = trigger_info['modifier']
 						self._trigger = msg.averageCost * modifier_ratio / float(self._contract.m_multiplier)
 						self._trigger_set = True
+						print('trigger set -- {}'.format(self._trigger))
 
 	def close(self):
 		'''called from handler as exit'''
@@ -225,15 +228,11 @@ class OptionStrategy(Strategy): # Scraper, Listener
 		trade_contract = self._contract
 
 		order_info = self._index['close']['order']
-		
-		action = order_info['action']
-		quantity = order_info['quantity']
-		otype = order_info['type']
 
-		self._close_order = create_order(action, quantity, otype)
+		self._close_order = create_order(order_info)
 
 		#Protocol - (<Contract>, <Order>)
-		self._tws_manager.place_order(contract, order)
+		self._tws_manager.place_order(self._contract, self._close_order)
 		self._closed = True
 
 	@staticmethod

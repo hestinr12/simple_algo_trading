@@ -19,8 +19,8 @@ end_of_day = 15 #18 * 60 *60
 # TWS default settings
 tws_port = 7496
 tws_client_id = 1234
-default_order_id = 2000100  # not entirely safe...
-default_account_id = 'DU15145'
+default_order_id = 150  # not entirely safe...
+default_account_id = '15076'
 
 #default config
 config_file = './data_config.yml'
@@ -81,7 +81,7 @@ def start():
 	if check:
 		demo_pos.initialize_order()
 		tws_manager.connect()
-		sleep(3)
+		sleep(5)
 		pieces = demo_pos.live()
 		tws_manager.register_all(demo_pos.data_handler)
 		sleep(5)

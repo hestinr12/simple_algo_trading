@@ -66,20 +66,29 @@ def compare_stock_contract(self, first, second):
 	else:
 		raise TypeError
 
-def compare_option_contract(self, first, second):
+def compare_option_contract(first, second):
 	if isinstance(first, Contract) and isinstance(second, Contract):		
 		try:
+			print('first --> {}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n'.format(first.m_symbol, first.m_secType, first.m_primaryExch, first.m_exchange, first.m_currency, first.m_multiplier, first.m_right, first.m_expiry, first.m_strike))
+			print('second --> {}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n'.format(second.m_symbol, second.m_secType, second.m_primaryExch, second.m_exchange, second.m_currency, second.m_multiplier, second.m_right, second.m_expiry, second.m_strike))
 			assert first.m_symbol == second.m_symbol
+			print('symbol match')
 			assert first.m_secType == second.m_secType
-			assert first.m_primaryExch == second.m_primaryExch
-			assert first.m_exchange == second.m_exchange
+			print('sec match')
+			#assert first.m_primaryExch == second.m_primaryExch
+			#assert first.m_exchange == second.m_exchange
 			assert first.m_currency == second.m_currency
-			assert first.m_multiplier == second.m_multiplier
+			print('currency match')
+			assert int(first.m_multiplier) == int(second.m_multiplier)
+			print('multiplier match')
 			assert first.m_right == second.m_right
+			print('right match')
 			assert first.m_expiry == second.m_expiry
+			print('expiry match')
 			assert first.m_strike == second.m_strike
-			return newContract
+			print('strike match')
 		except:
 			return False
+		return True
 	else:
 		raise TypeError

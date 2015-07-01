@@ -16,9 +16,8 @@ class TwsManager():
 		self.connected = False
 		self._order_id = default_order_id
 		self.account_id = account_id
-		self._account_updates = ['UpdatePortfolio']
+		self._account_updates = ['updatePortfolio']
 		self._data_router = {} # order_id:position
-		self.__all_positions = list()
 
 	def get_order_id(self):
 		self._order_id += 1
@@ -64,8 +63,9 @@ class TwsManager():
 
 		#send account updates to all positions
 		if msg.typeName in self._account_updates:
-			for p in self.__all_positions:
-				p.data_handler(msg)
+			all_handlers = self._data_router.items()
+			for handler in all_handlers:
+				handler[1](msg)
 
 	def place_order(self, contract, order):
 		if not isinstance(contract, Contract):
@@ -156,7 +156,6 @@ class TwsManager():
 		order_id = self.get_order_id()
 		self._tws.reqMktData(order_id, new_contract, '', True)
 		self._data_contracts[order_id] = position.data_handler
-		self.__all_positions.append(position)
 
 		return order_id
 
