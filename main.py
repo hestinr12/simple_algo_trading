@@ -19,26 +19,12 @@ end_of_day = 15 #18 * 60 *60
 # TWS default settings
 tws_port = 7496
 tws_client_id = 1234
-default_order_id = 150  # not entirely safe...
+default_order_id = 190  # not entirely safe...
 default_account_id = '15076'
 
 #default config
 config_file = './data_config.yml'
 
-#@asyncio.coroutine
-def trade_worker(tws_manager, trader_queue):
-	while True:
-		trade = yield from trader_queue.get()
-		if trade == None:
-			break
-		else:
-			#Protocol - (<Contract>, <Order>)
-			try:	
-				contract = trade[0]
-				order = trade[1]
-				tws_manager.placeOrder(contract, order)
-			except:
-				raise RuntimeError
 
 def start():
 	''' Entry into basic market functionality '''
@@ -59,7 +45,7 @@ def start():
 	demo_pos = OptionStrategy(config[0], tws_manager)
 
 	'''
-	Position Lifecycle:
+	Strategy Lifecycle:
 	- decision to create
 	- Created
 	- initialized 

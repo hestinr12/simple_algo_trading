@@ -188,7 +188,8 @@ class OptionStrategy(Strategy): # Scraper, Listener
 		if self._trigger_set and not self._trigger_pulled:
 			# check if we should close
 			if msg.typeName is 'tickOptionComputation':
-				if msg.optPrice > self._trigger:
+				if msg.optPrice > self._trigger: # check 1.2 modifier
+					print('tripped --> {}'.format(msg))
 					self.close()
 					self._trigger_pulled = True
 		else:

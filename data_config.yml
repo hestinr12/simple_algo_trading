@@ -10,7 +10,7 @@
   live:
     info: {currency: USD, exchange: SMART, multiplier: 100, primary_exchange: SMART, right: C, security_type: OPT, symbol: SVXY}
     order: {action: BUY, quantity: 20, type: MKT}
-    trigger: {method: profit_ratio, modifier: .9}
+    trigger: {method: profit_ratio, modifier: 1.2}
     source: IB
   close:
     info: {currency: USD, exchange: SMART, multiplier: 100, primary_exchange: SMART, right: C, security_type: OPT, symbol: SVXY}
