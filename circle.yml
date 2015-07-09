@@ -5,7 +5,6 @@ machine:
 dependencies:
   post:
     - git clone https://github.com/blampe/IbPy
-    - ls
     - cd IbPy && python setup.py install
 
 test:
