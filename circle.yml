@@ -3,8 +3,11 @@ machine:
     version: 3.4.2
 
 dependencies:
-  pre:
-    - git clone https://github.com/blampe/IbPy    
+  post:
+    - git clone https://github.com/blampe/IbPy
+    - cd IbPy/
+    - python setup.py install
+    - cd ..
 
 test:
   override:
