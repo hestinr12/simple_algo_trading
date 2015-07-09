@@ -10,9 +10,9 @@ from ib.ext.Order import Order
 class TwsManager():
 	''' Helper class for TWS interactions '''
 
-	def __init__(self, tws_port, tws_client_id, default_order_id, account_id):
+	def __init__(self, tws_host, tws_port, tws_client_id, default_order_id, account_id):
 		''' Pass in the TWS connection object and be responsible for it''' 
-		self._tws = Connection.create(port=tws_port, clientId=tws_client_id)
+		self._tws = Connection.create(host=tws_host, port=tws_port, clientId=tws_client_id)
 		self.connected = False
 		self._order_id = default_order_id
 		self.account_id = account_id

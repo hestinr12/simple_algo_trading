@@ -1,7 +1,7 @@
 - premarket:
     info: {inverse_modifier_from_class: qwidget-Red, scrape_id: qwidget_percent, scrape_type: value, url: 'http://www.nasdaq.com/symbol/uvxy/premarket'}
     control: {type: float, value: 3.0}
-    comparative: lt # <scraped> <comparative> <control>
+    comparative: gt # <scraped> <comparative> <control>
     source: URL_SCRAPE
   initialize:
     info: {scrape_id: qwidget_lastsale, scrape_type: value, url: 'http://www.nasdaq.com/symbol/svxy'}

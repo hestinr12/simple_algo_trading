@@ -17,9 +17,10 @@ market_open = 8 #9 * 60 * 60 + 30 * 60
 end_of_day = 15 #18 * 60 *60
 
 # TWS default settings
-tws_port = 7496
+tws_host = 'localhost'
+tws_port = 4001
 tws_client_id = 1234
-default_order_id = 190  # not entirely safe...
+default_order_id = 210  # not entirely safe...
 default_account_id = '15076'
 
 #default config
@@ -37,7 +38,7 @@ def start():
 
 	print(config)
 
-	tws_manager = TwsManager(tws_port, tws_client_id, default_order_id, default_account_id) 
+	tws_manager = TwsManager(tws_host, tws_port, tws_client_id, default_order_id, default_account_id) 
 
 	trader_queue = Queue()
 	#asyncio.async(trade_worker(tws_manager, trader_queue))
