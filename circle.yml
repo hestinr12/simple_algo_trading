@@ -1,4 +1,5 @@
 dependencies:
   post:
     - git clone https://github.com/blampe/IbPy
-    - python ./IbPy/setup.py install
+    - cd ./IbPy/setup.py
+    - python setup.py install
