@@ -3,7 +3,7 @@ machine:
     version: 3.4.2
 
 dependencies:
-  post:
+  pre:
     - git clone https://github.com/blampe/IbPy    
 
 test:
