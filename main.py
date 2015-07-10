@@ -20,8 +20,8 @@ end_of_day = 15 #18 * 60 *60
 tws_host = 'localhost'
 tws_port = 4001
 tws_client_id = 1234
-default_order_id = 210  # not entirely safe...
-default_account_id = '15076'
+default_order_id = 220  # not entirely safe...
+default_account_id = '15178'
 
 #default config
 config_file = './data_config.yml'

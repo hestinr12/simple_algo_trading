@@ -135,10 +135,15 @@ class OptionStrategy(Strategy): # Scraper, Listener
 					break
 				offset -= 1
 
+			if offset == 0:
+				offset = 7
+
 			d = datetime.date.today() + datetime.timedelta(days=offset)
 			day = "0{}".format(d.day) if len(str(d.day)) == 1 else str(d.day)
 			month = "0{}".format(d.month) if len(str(d.month)) == 1 else str(d.month)
 			year = str(d.year)
+
+
 
 			self._expiry = "{}{}{}".format(year, month, day)
 
@@ -187,16 +192,19 @@ class OptionStrategy(Strategy): # Scraper, Listener
 
 		if self._trigger_set and not self._trigger_pulled:
 			# check if we should close
-			if msg.typeName is 'tickOptionComputation':
-				if msg.optPrice > self._trigger: # check 1.2 modifier
-					print('tripped --> {}'.format(msg))
-					self.close()
-					self._trigger_pulled = True
+			if msg.typeName is 'tickPrice':
+				if msg.field == 2:
+					if msg.price >= self._trigger: # check 1.2 modifier
+						print('tripped --> {}'.format(msg))
+						self.close()
+						self._trigger_pulled = True
 		else:
 
 			#print(msg.typeName)
 
 			if msg.typeName is 'updatePortfolio' and not self._trigger_set and not self._trigger_pulled:
+				# CRITICAL: Change this to be based on 'orderStatus' -> msg.status == "Filled"
+
 				# if contract is my contract
 				#   price paid?
 				#   set trigger
